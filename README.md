@@ -2,8 +2,7 @@
 # 🎯 QA automation-from-scratch
 ### Playwright · Selenium · CI/CD · Page Object Model · API Testing
 
-> A production-grade test automation framework demonstrating real-world QA engineering skills — built to showcase what I can deliver from day one.
-
+> A production-grade test automation framework demonstrating real-world QA engineering skills 
 ---
 
 ## 📋 What This Project Demonstrates
