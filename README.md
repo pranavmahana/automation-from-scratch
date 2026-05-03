@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🎯 QA Automation Portfolio
 ### Playwright · Selenium · CI/CD · Page Object Model · API Testing
 
@@ -185,3 +186,6 @@ SLACK_WEBHOOK_URL=https://hooks.slack.com/...
 ---
 
 *Built with the goal of making QA automation a first-class citizen in any engineering team.*
+=======
+# qa-automation-portfolio
+>>>>>>> b53abe4de027e9dadbe44e220e5c917485e6dc60
