@@ -1,0 +1,228 @@
+# .github/workflows/qa-pipeline.yml
+#
+# QA AUTOMATION CI/CD PIPELINE
+#
+# Triggers: push to main/dev, pull requests, scheduled nightly run
+# Jobs:     lint → unit → e2e (parallel browsers) → reports → notify
+#
+# This demonstrates real CI/CD knowledge:
+#  - Matrix strategy for parallel cross-browser testing
+#  - Artifact upload for test reports and screenshots
+#  - Environment-based deployments (staging vs production)
+#  - Secrets management (never hardcode credentials)
+#  - Failure notifications to Slack/email
+#  - Caching node_modules for speed
+
+name: QA Automation Pipeline
+
+on:
+  push:
+    branches: [main, develop, 'release/**']
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    # Nightly regression at 2am UTC (catches flakiness over time)
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    # Manual trigger with optional browser selection
+    inputs:
+      browser:
+        description: 'Browser to run tests on'
+        required: false
+        default: 'all'
+        type: choice
+        options: [all, chromium, firefox, webkit]
+
+env:
+  NODE_VERSION: '20'
+  BASE_URL: ${{ secrets.BASE_URL || 'https://staging.yourapp.com' }}
+
+jobs:
+
+  # ── 1. Lint & Static Analysis ─────────────────────────────────────────────
+  lint:
+    name: Lint & Code Quality
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint
+        run: npm run lint
+
+      - name: Check formatting
+        run: npx prettier --check .
+
+  # ── 2. Playwright E2E — Cross-Browser Matrix ──────────────────────────────
+  playwright-tests:
+    name: E2E Tests (${{ matrix.browser }})
+    needs: lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    strategy:
+      fail-fast: false    # Run ALL browsers even if one fails
+      matrix:
+        browser: [chromium, firefox, webkit]
+        shard: [1/3, 2/3, 3/3]   # Split tests across 3 runners per browser
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps ${{ matrix.browser }}
+
+      - name: Run Playwright tests
+        run: |
+          npx playwright test \
+            --project=${{ matrix.browser }} \
+            --shard=${{ matrix.shard }} \
+            --reporter=blob
+        env:
+          BASE_URL: ${{ env.BASE_URL }}
+          ADMIN_EMAIL: ${{ secrets.TEST_ADMIN_EMAIL }}
+          ADMIN_PASS: ${{ secrets.TEST_ADMIN_PASS }}
+          API_TOKEN: ${{ secrets.API_TOKEN }}
+          CI: true
+
+      - name: Upload blob report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: blob-report-${{ matrix.browser }}-${{ strategy.job-index }}
+          path: blob-report/
+          retention-days: 7
+
+      - name: Upload screenshots on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: screenshots-${{ matrix.browser }}-${{ strategy.job-index }}
+          path: reports/screenshots/
+          retention-days: 3
+
+  # ── 3. Selenium Tests ─────────────────────────────────────────────────────
+  selenium-tests:
+    name: Selenium Cross-Browser
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup Chrome
+        uses: browser-actions/setup-chrome@v1
+
+      - name: Run Selenium tests
+        run: npm run test:selenium
+        env:
+          BASE_URL: ${{ env.BASE_URL }}
+
+  # ── 4. API Tests ──────────────────────────────────────────────────────────
+  api-tests:
+    name: API Tests
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Run API tests
+        run: npx playwright test tests/playwright/api/
+        env:
+          API_BASE_URL: ${{ secrets.API_BASE_URL }}
+          API_TOKEN: ${{ secrets.API_TOKEN }}
+
+  # ── 5. Merge Reports & Publish ────────────────────────────────────────────
+  merge-reports:
+    name: Merge Reports & Publish
+    if: always()
+    needs: [playwright-tests, selenium-tests, api-tests]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+      - run: npm ci
+
+      - name: Download all blob reports
+        uses: actions/download-artifact@v4
+        with:
+          path: all-blob-reports
+          pattern: blob-report-*
+          merge-multiple: true
+
+      - name: Merge Playwright reports
+        run: npx playwright merge-reports --reporter html ./all-blob-reports
+
+      - name: Upload merged HTML report
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-${{ github.run_id }}
+          path: playwright-report/
+          retention-days: 30
+
+      - name: Publish report to GitHub Pages
+        if: github.ref == 'refs/heads/main'
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./playwright-report
+          destination_dir: reports/${{ github.run_id }}
+
+  # ── 6. Notify on Failure ──────────────────────────────────────────────────
+  notify:
+    name: Notify Team
+    if: failure()
+    needs: [playwright-tests, selenium-tests, api-tests]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Slack notification on failure
+        uses: slackapi/slack-github-action@v1.27
+        with:
+          payload: |
+            {
+              "text": "❌ QA Pipeline Failed on `${{ github.ref_name }}`",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*QA Automation Pipeline Failed*\n• Branch: `${{ github.ref_name }}`\n• Commit: `${{ github.sha }}`\n• Triggered by: ${{ github.actor }}\n• <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View Run>"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

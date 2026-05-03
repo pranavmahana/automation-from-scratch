@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QA Automation Portfolio — Playwright & Selenium</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0A0D14;
+    --surface: #10141F;
+    --card: #151B2E;
+    --border: #1E2840;
+    --accent: #00E5A0;
+    --accent2: #6C63FF;
+    --accent3: #FF6B6B;
+    --amber: #FFB347;
+    --text: #E8EDF5;
+    --muted: #6B7A9A;
+    --code-bg: #0D1117;
+    --mono: 'DM Mono', monospace;
+    --sans: 'Syne', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    line-height: 1.6;
+    overflow-x: hidden;
+  }
+
+  /* ── GRID NOISE BACKGROUND ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 40px 40px;
+    opacity: 0.3;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── HEADER ── */
+  header {
+    padding: 5rem 0 4rem;
+    position: relative;
+  }
+
+  .tag-line {
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    color: var(--accent);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .tag-line::before {
+    content: '';
+    display: inline-block;
+    width: 32px;
+    height: 1px;
+    background: var(--accent);
+  }
+
+  h1 {
+    font-size: clamp(2.8rem, 6vw, 5.5rem);
+    font-weight: 800;
+    line-height: 1.0;
+    letter-spacing: -0.03em;
+    margin-bottom: 1.5rem;
+  }
+
+  h1 .line2 {
+    color: var(--accent);
+    display: block;
+  }
+
+  .hero-desc {
+    font-size: 1.1rem;
+    color: var(--muted);
+    max-width: 600px;
+    line-height: 1.8;
+    font-weight: 400;
+  }
+
+  .hero-stats {
+    display: flex;
+    gap: 3rem;
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .stat-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .stat-num {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--accent);
+  }
+
+  .stat-label {
+    font-size: 0.75rem;
+    color: var(--muted);
+    font-family: var(--mono);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  /* ── SECTION TITLE ── */
+  .section {
+    padding: 4rem 0;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .section-num {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--accent);
+    opacity: 0.6;
+  }
+
+  h2 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+  }
+
+  /* ── SKILL CARDS ── */
+  .skills-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .skill-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.75rem;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+
+  .skill-card:hover {
+    border-color: var(--accent);
+    transform: translateY(-3px);
+  }
+
+  .skill-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s;
+  }
+
+  .skill-card:hover::after {
+    transform: scaleX(1);
+  }
+
+  .skill-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .icon-green  { background: rgba(0,229,160,0.12); }
+  .icon-purple { background: rgba(108,99,255,0.12); }
+  .icon-red    { background: rgba(255,107,107,0.12); }
+  .icon-amber  { background: rgba(255,179,71,0.12); }
+
+  .skill-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+
+  .skill-desc {
+    font-size: 0.875rem;
+    color: var(--muted);
+    line-height: 1.7;
+    margin-bottom: 1.25rem;
+  }
+
+  .skill-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .tag {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    padding: 0.25rem 0.6rem;
+    border-radius: 4px;
+    background: var(--code-bg);
+    color: var(--accent);
+    border: 1px solid rgba(0,229,160,0.2);
+  }
+
+  .tag.purple { color: var(--accent2); border-color: rgba(108,99,255,0.2); }
+  .tag.red    { color: var(--accent3); border-color: rgba(255,107,107,0.2); }
+  .tag.amber  { color: var(--amber);   border-color: rgba(255,179,71,0.2); }
+
+  /* ── CODE BLOCK ── */
+  .code-showcase {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+  }
+
+  .code-header {
+    background: var(--surface);
+    padding: 0.75rem 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .code-dots {
+    display: flex;
+    gap: 6px;
+  }
+
+  .dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+  }
+
+  .dot-r { background: #FF5F57; }
+  .dot-y { background: #FFBD2E; }
+  .dot-g { background: #28C840; }
+
+  .code-filename {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+
+  .code-body {
+    padding: 1.5rem;
+    font-family: var(--mono);
+    font-size: 0.82rem;
+    line-height: 1.8;
+    overflow-x: auto;
+  }
+
+  .c-comment { color: #4A5568; font-style: italic; }
+  .c-keyword { color: #C792EA; }
+  .c-string  { color: #C3E88D; }
+  .c-fn      { color: #82AAFF; }
+  .c-var     { color: #F07178; }
+  .c-accent  { color: var(--accent); }
+  .c-num     { color: var(--amber); }
+
+  /* ── CI/CD PIPELINE ── */
+  .pipeline {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 2rem;
+  }
+
+  .pipeline-stages {
+    display: flex;
+    align-items: stretch;
+    gap: 0;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+  }
+
+  .pipeline-stage {
+    flex: 1;
+    min-width: 130px;
+    position: relative;
+    text-align: center;
+  }
+
+  .pipeline-stage + .pipeline-stage::before {
+    content: '→';
+    position: absolute;
+    left: -12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--muted);
+    font-size: 1.2rem;
+  }
+
+  .stage-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 0.75rem;
+    margin: 0 12px;
+    transition: border-color 0.2s;
+  }
+
+  .stage-box:hover { border-color: var(--accent); }
+
+  .stage-icon { font-size: 1.5rem; margin-bottom: 0.5rem; }
+
+  .stage-name {
+    font-size: 0.75rem;
+    font-weight: 700;
+    margin-bottom: 0.25rem;
+  }
+
+  .stage-detail {
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+
+  .stage-status {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+    margin-top: 0.5rem;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* ── TEST RESULTS TABLE ── */
+  .results-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+  }
+
+  .results-table th {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .results-table td {
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid rgba(30,40,64,0.5);
+    font-family: var(--mono);
+    font-size: 0.8rem;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+  }
+
+  .badge-pass   { background: rgba(0,229,160,0.1); color: var(--accent); }
+  .badge-skip   { background: rgba(255,179,71,0.1); color: var(--amber); }
+  .badge-e2e    { background: rgba(108,99,255,0.1); color: var(--accent2); }
+  .badge-api    { background: rgba(255,107,107,0.1); color: var(--accent3); }
+  .badge-sec    { background: rgba(255,179,71,0.1); color: var(--amber); }
+
+  .speed-bar {
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: 4px;
+    width: 80px;
+  }
+
+  .speed-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 2px;
+  }
+
+  /* ── WHAT I BRING ── */
+  .value-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+  }
+
+  .value-item {
+    padding: 1.5rem;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .value-icon { font-size: 1.5rem; }
+
+  .value-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .value-text {
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.7;
+  }
+
+  /* ── FOOTER ── */
+  footer {
+    padding: 3rem 0;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+
+  .footer-links { display: flex; gap: 1.5rem; }
+  .footer-links a { color: var(--muted); text-decoration: none; transition: color 0.2s; }
+  .footer-links a:hover { color: var(--accent); }
+
+  /* Animate in */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .fade-in { animation: fadeUp 0.6s ease both; }
+  .delay-1 { animation-delay: 0.1s; }
+  .delay-2 { animation-delay: 0.2s; }
+  .delay-3 { animation-delay: 0.3s; }
+  .delay-4 { animation-delay: 0.4s; }
+
+  @media (max-width: 640px) {
+    .hero-stats { gap: 1.5rem; }
+    .pipeline-stages { gap: 8px; }
+    h1 { font-size: 2.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ── HERO ─────────────────────────────────────────────── -->
+  <header>
+    <div class="tag-line fade-in">QA Automation Engineer Portfolio</div>
+    <h1 class="fade-in delay-1">
+      Test Everything.<br>
+      <span class="line2">Break Nothing.</span>
+    </h1>
+    <p class="hero-desc fade-in delay-2">
+      Production-grade automation framework built with Playwright and Selenium.
+      Cross-browser. CI/CD integrated. Page Object Model. API testing.
+      The kind of QA infrastructure that ships faster and breaks less.
+    </p>
+    <div class="hero-stats fade-in delay-3">
+      <div class="stat-item">
+        <span class="stat-num">36+</span>
+        <span class="stat-label">Test Cases</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num">5</span>
+        <span class="stat-label">Browsers</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num">3</span>
+        <span class="stat-label">Test Types</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-num">CI/CD</span>
+        <span class="stat-label">Fully Automated</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- ── SKILLS ─────────────────────────────────────────────── -->
+  <section class="section">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <h2>What I Built & Why It Matters</h2>
+    </div>
+
+    <div class="skills-grid">
+      <div class="skill-card">
+        <div class="skill-icon icon-green">🎭</div>
+        <div class="skill-title">Playwright E2E Testing</div>
+        <div class="skill-desc">
+          Full end-to-end coverage across Chromium, Firefox, WebKit and mobile viewports.
+          Auto-waiting, network mocking, visual regression, and storageState for 5× faster CI runs.
+        </div>
+        <div class="skill-tags">
+          <span class="tag">auto-wait</span>
+          <span class="tag">network mock</span>
+          <span class="tag">visual regression</span>
+          <span class="tag">5 browsers</span>
+        </div>
+      </div>
+
+      <div class="skill-card">
+        <div class="skill-icon icon-purple">🌐</div>
+        <div class="skill-title">Selenium WebDriver 4</div>
+        <div class="skill-desc">
+          Cross-browser automation with explicit waits, JavaScript executor, keyboard navigation,
+          and structured failure reporting with screenshots on error.
+        </div>
+        <div class="skill-tags">
+          <span class="tag purple">explicit waits</span>
+          <span class="tag purple">JS executor</span>
+          <span class="tag purple">cross-browser</span>
+          <span class="tag purple">screenshot on fail</span>
+        </div>
+      </div>
+
+      <div class="skill-card">
+        <div class="skill-icon icon-amber">📐</div>
+        <div class="skill-title">Page Object Model</div>
+        <div class="skill-desc">
+          BasePage → LoginPage → DashboardPage hierarchy. Selectors centralised.
+          One DOM change = one file change, not 20. Tests read like user stories, not CSS selectors.
+        </div>
+        <div class="skill-tags">
+          <span class="tag amber">POM pattern</span>
+          <span class="tag amber">BasePage</span>
+          <span class="tag amber">reusable actions</span>
+          <span class="tag amber">clean tests</span>
+        </div>
+      </div>
+
+      <div class="skill-card">
+        <div class="skill-icon icon-red">🔌</div>
+        <div class="skill-title">API Testing</div>
+        <div class="skill-desc">
+          Full CRUD coverage, schema validation, response time assertions, and auth header
+          testing — all with Playwright's APIRequestContext. No browser overhead.
+        </div>
+        <div class="skill-tags">
+          <span class="tag red">GET/POST/PUT/DELETE</span>
+          <span class="tag red">schema validation</span>
+          <span class="tag red">response time</span>
+          <span class="tag red">auth headers</span>
+        </div>
+      </div>
+
+      <div class="skill-card">
+        <div class="skill-icon icon-green">🔒</div>
+        <div class="skill-title">Security Testing</div>
+        <div class="skill-desc">
+          SQL injection, XSS payload testing, user enumeration prevention, account lockout
+          verification — security mindset baked into the test suite, not an afterthought.
+        </div>
+        <div class="skill-tags">
+          <span class="tag">SQL injection</span>
+          <span class="tag">XSS</span>
+          <span class="tag">lockout</span>
+          <span class="tag">enumeration</span>
+        </div>
+      </div>
+
+      <div class="skill-card">
+        <div class="skill-icon icon-purple">⚙️</div>
+        <div class="skill-title">CI/CD Pipeline</div>
+        <div class="skill-desc">
+          GitHub Actions: parallel matrix testing, sharding, artifact upload, HTML report publishing
+          to GitHub Pages, and Slack failure notifications. Real DevOps integration.
+        </div>
+        <div class="skill-tags">
+          <span class="tag purple">GitHub Actions</span>
+          <span class="tag purple">matrix build</span>
+          <span class="tag purple">sharding</span>
+          <span class="tag purple">Slack alerts</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CODE SAMPLE ─────────────────────────────────────────────── -->
+  <section class="section">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <h2>Code That Shows the Work</h2>
+    </div>
+
+    <div class="code-showcase">
+      <div class="code-header">
+        <div class="code-dots">
+          <div class="dot dot-r"></div>
+          <div class="dot dot-y"></div>
+          <div class="dot dot-g"></div>
+        </div>
+        <span class="code-filename">tests/playwright/auth.spec.js</span>
+        <span style="font-family: var(--mono); font-size: 0.7rem; color: #28C840;">● live</span>
+      </div>
+      <div class="code-body">
+<span class="c-comment">// Data-driven negative testing — one loop, five edge cases</span>
+<span class="c-keyword">const</span> <span class="c-var">invalidEmails</span> = [<span class="c-string">'notanemail'</span>, <span class="c-string">'missing@'</span>, <span class="c-string">'@nodomain.com'</span>, <span class="c-string">''</span>];
+
+<span class="c-keyword">for</span> (<span class="c-keyword">const</span> <span class="c-var">email</span> <span class="c-keyword">of</span> <span class="c-var">invalidEmails</span>) {
+  <span class="c-fn">test</span>(<span class="c-string">`❌ Invalid email rejected: "<span class="c-var">${email || '(empty)'}</span>"`</span>, <span class="c-keyword">async</span> ({ page }) => {
+    <span class="c-keyword">await</span> loginPage.<span class="c-fn">login</span>(email, <span class="c-string">'ValidPass123!'</span>);
+    <span class="c-keyword">const</span> <span class="c-var">valid</span> = <span class="c-keyword">await</span> emailInput.<span class="c-fn">evaluate</span>(el => el.validationMessage);
+    <span class="c-fn">expect</span>(valid !== <span class="c-string">''</span> || customError).<span class="c-fn">toBeTruthy</span>();
+  });
+}
+
+<span class="c-comment">// Security: verify no user enumeration vulnerability</span>
+<span class="c-fn">test</span>(<span class="c-string">'🔒 Non-existent user gives generic error'</span>, <span class="c-keyword">async</span> () => {
+  <span class="c-keyword">await</span> loginPage.<span class="c-fn">login</span>(<span class="c-string">'ghost@nowhere.com'</span>, <span class="c-string">'any_password'</span>);
+  <span class="c-keyword">const</span> <span class="c-var">err</span> = <span class="c-keyword">await</span> loginPage.<span class="c-fn">expectErrorMessage</span>();
+  <span class="c-fn">expect</span>(err).<span class="c-fn">not</span>.<span class="c-fn">toContain</span>(<span class="c-string">'user not found'</span>); <span class="c-comment">// must NOT leak info</span>
+  <span class="c-fn">expect</span>(err).<span class="c-fn">toContain</span>(<span class="c-string">'Invalid credentials'</span>);
+});
+
+<span class="c-comment">// Network mock: test UI behavior without backend dependency</span>
+<span class="c-fn">test</span>(<span class="c-string">'🔌 Handles API 500 error gracefully'</span>, <span class="c-keyword">async</span> ({ page }) => {
+  <span class="c-keyword">await</span> page.<span class="c-fn">route</span>(<span class="c-string">'**/api/v1/records*'</span>, route =>
+    route.<span class="c-fn">fulfill</span>({ status: <span class="c-num">500</span>, body: <span class="c-string">'Internal Server Error'</span> })
+  );
+  <span class="c-keyword">await</span> <span class="c-fn">expect</span>(page.<span class="c-fn">locator</span>(<span class="c-string">'[data-testid="error-banner"]'</span>)).<span class="c-fn">toBeVisible</span>();
+});
+      </div>
+    </div>
+
+    <div class="code-showcase">
+      <div class="code-header">
+        <div class="code-dots">
+          <div class="dot dot-r"></div>
+          <div class="dot dot-y"></div>
+          <div class="dot dot-g"></div>
+        </div>
+        <span class="code-filename">pages/BasePage.js — safe interactions</span>
+      </div>
+      <div class="code-body">
+<span class="c-comment">/**
+ * Retry-safe click. Waits for visible + enabled before clicking.
+ * Handles flaky elements in CI environments.
+ */</span>
+<span class="c-keyword">async</span> <span class="c-fn">safeClick</span>(selector, options = {}) {
+  <span class="c-keyword">const</span> el = <span class="c-keyword">this</span>.page.<span class="c-fn">locator</span>(selector).<span class="c-fn">first</span>();
+  <span class="c-keyword">await</span> el.<span class="c-fn">waitFor</span>({ state: <span class="c-string">'visible'</span>, timeout: <span class="c-keyword">this</span>.timeout });
+  <span class="c-keyword">await</span> el.<span class="c-fn">scrollIntoViewIfNeeded</span>();
+  <span class="c-keyword">await</span> el.<span class="c-fn">click</span>(options);
+}
+
+<span class="c-comment">// Mock any API — test UI in isolation, no backend needed</span>
+<span class="c-keyword">async</span> <span class="c-fn">mockAPI</span>(url, body, status = <span class="c-num">200</span>) {
+  <span class="c-keyword">await</span> <span class="c-keyword">this</span>.page.<span class="c-fn">route</span>(url, route =>
+    route.<span class="c-fn">fulfill</span>({ status, body: JSON.<span class="c-fn">stringify</span>(body) })
+  );
+}
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CI/CD PIPELINE ─────────────────────────────────────────────── -->
+  <section class="section">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <h2>CI/CD Pipeline Architecture</h2>
+    </div>
+
+    <div class="pipeline">
+      <div class="pipeline-stages">
+        <div class="pipeline-stage">
+          <div class="stage-box">
+            <div class="stage-icon">📝</div>
+            <div class="stage-name">Lint</div>
+            <div class="stage-detail">ESLint<br>Prettier<br>Schema</div>
+            <div class="stage-status"></div>
+          </div>
+        </div>
+        <div class="pipeline-stage">
+          <div class="stage-box">
+            <div class="stage-icon">🎭</div>
+            <div class="stage-name">Playwright</div>
+            <div class="stage-detail">3 browsers<br>3 shards each<br>= 9 parallel</div>
+            <div class="stage-status"></div>
+          </div>
+        </div>
+        <div class="pipeline-stage">
+          <div class="stage-box">
+            <div class="stage-icon">🌐</div>
+            <div class="stage-name">Selenium</div>
+            <div class="stage-detail">Chrome<br>Headless<br>Node runner</div>
+            <div class="stage-status"></div>
+          </div>
+        </div>
+        <div class="pipeline-stage">
+          <div class="stage-box">
+            <div class="stage-icon">🔌</div>
+            <div class="stage-name">API Tests</div>
+            <div class="stage-detail">No browser<br>CRUD + schema<br>Fast</div>
+            <div class="stage-status"></div>
+          </div>
+        </div>
+        <div class="pipeline-stage">
+          <div class="stage-box">
+            <div class="stage-icon">📊</div>
+            <div class="stage-name">Reports</div>
+            <div class="stage-detail">HTML merge<br>GitHub Pages<br>JUnit XML</div>
+            <div class="stage-status"></div>
+          </div>
+        </div>
+        <div class="pipeline-stage">
+          <div class="stage-box">
+            <div class="stage-icon">🔔</div>
+            <div class="stage-name">Notify</div>
+            <div class="stage-detail">Slack alert<br>on failure<br>Run link</div>
+            <div class="stage-status"></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border); display: flex; gap: 2rem;">
+        <div style="display: flex; align-items: center; gap: 0.5rem; font-family: var(--mono); font-size: 0.75rem; color: var(--muted);">
+          <span style="color: var(--accent);">▸</span> Sequential login ≈ 2.5 min
+        </div>
+        <div style="display: flex; align-items: center; gap: 0.5rem; font-family: var(--mono); font-size: 0.75rem; color: var(--accent);">
+          <span>▸</span> storageState + sharding ≈ 45 sec ⚡
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── TEST RESULTS ─────────────────────────────────────────────── -->
+  <section class="section">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <h2>Sample Test Run Results</h2>
+    </div>
+
+    <div class="code-showcase">
+      <div class="code-header">
+        <div class="code-dots">
+          <div class="dot dot-r"></div>
+          <div class="dot dot-y"></div>
+          <div class="dot dot-g"></div>
+        </div>
+        <span class="code-filename">Test Suite Coverage</span>
+      </div>
+      <table class="results-table">
+        <thead>
+          <tr>
+            <th>Test Name</th>
+            <th>Type</th>
+            <th>Browser</th>
+            <th>Status</th>
+            <th>Time</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>✅ Valid credentials redirect to dashboard</td>
+            <td><span class="badge badge-e2e">E2E</span></td>
+            <td>Chromium</td>
+            <td><span class="badge badge-pass">PASS</span></td>
+            <td>1.2s<div class="speed-bar"><div class="speed-fill" style="width:40%"></div></div></td>
+          </tr>
+          <tr>
+            <td>🔒 SQL injection attempt safely handled</td>
+            <td><span class="badge badge-sec">Security</span></td>
+            <td>Firefox</td>
+            <td><span class="badge badge-pass">PASS</span></td>
+            <td>0.8s<div class="speed-bar"><div class="speed-fill" style="width:27%"></div></div></td>
+          </tr>
+          <tr>
+            <td>📸 Dashboard layout matches snapshot</td>
+            <td><span class="badge badge-e2e">Visual</span></td>
+            <td>WebKit</td>
+            <td><span class="badge badge-pass">PASS</span></td>
+            <td>2.1s<div class="speed-bar"><div class="speed-fill" style="width:70%"></div></div></td>
+          </tr>
+          <tr>
+            <td>GET /users/:id returns correct schema</td>
+            <td><span class="badge badge-api">API</span></td>
+            <td>—</td>
+            <td><span class="badge badge-pass">PASS</span></td>
+            <td>0.3s<div class="speed-bar"><div class="speed-fill" style="width:10%"></div></div></td>
+          </tr>
+          <tr>
+            <td>⚡ Dashboard loads within 3 seconds</td>
+            <td><span class="badge badge-e2e">Perf</span></td>
+            <td>Chromium</td>
+            <td><span class="badge badge-pass">PASS</span></td>
+            <td>1.9s<div class="speed-bar"><div class="speed-fill" style="width:63%"></div></div></td>
+          </tr>
+          <tr>
+            <td>🔒 Account lockout after 5 failed attempts</td>
+            <td><span class="badge badge-sec">Security</span></td>
+            <td>Firefox</td>
+            <td><span class="badge badge-pass">PASS</span></td>
+            <td>3.4s<div class="speed-bar"><div class="speed-fill" style="width:100%"></div></div></td>
+          </tr>
+          <tr>
+            <td>♿ Login form is keyboard navigable</td>
+            <td><span class="badge badge-e2e">A11y</span></td>
+            <td>Chromium</td>
+            <td><span class="badge badge-pass">PASS</span></td>
+            <td>0.9s<div class="speed-bar"><div class="speed-fill" style="width:30%"></div></div></td>
+          </tr>
+          <tr>
+            <td>DELETE /users/:id returns 200 or 204</td>
+            <td><span class="badge badge-api">API</span></td>
+            <td>—</td>
+            <td><span class="badge badge-pass">PASS</span></td>
+            <td>0.4s<div class="speed-bar"><div class="speed-fill" style="width:13%"></div></div></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── VALUE PROP ─────────────────────────────────────────────── -->
+  <section class="section">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <h2>What I Bring to Your Team</h2>
+    </div>
+
+    <div class="value-grid">
+      <div class="value-item">
+        <div class="value-icon">🚀</div>
+        <div class="value-title">CI/CD Ready from Day One</div>
+        <div class="value-text">GitHub Actions pipelines with matrix testing, sharding, and artifact publishing — I don't just write tests, I integrate them into the delivery pipeline.</div>
+      </div>
+      <div class="value-item">
+        <div class="value-icon">🧱</div>
+        <div class="value-title">Framework Architecture</div>
+        <div class="value-text">Page Object Model means tests don't break when UI changes. One selector update, not 20 test file edits. Scales to hundreds of tests cleanly.</div>
+      </div>
+      <div class="value-item">
+        <div class="value-icon">⚡</div>
+        <div class="value-title">Speed Optimizations</div>
+        <div class="value-text">storageState auth reuse, parallel execution, and test sharding reduce CI time by 5× — faster feedback loops for the whole engineering team.</div>
+      </div>
+      <div class="value-item">
+        <div class="value-icon">🔒</div>
+        <div class="value-title">Security Mindset</div>
+        <div class="value-text">SQL injection, XSS, user enumeration, and account lockout tests are standard — not optional. Security awareness built in, not bolted on.</div>
+      </div>
+      <div class="value-item">
+        <div class="value-icon">🌐</div>
+        <div class="value-title">Both Playwright & Selenium</div>
+        <div class="value-text">Modern teams use Playwright; enterprises run Selenium Grid. I know both deeply — I'm useful in any stack, not locked into one tool.</div>
+      </div>
+      <div class="value-item">
+        <div class="value-icon">📊</div>
+        <div class="value-title">Reporting & Visibility</div>
+        <div class="value-text">HTML reports, JUnit XML for JIRA, Slack notifications — stakeholders and developers get exactly the visibility they need, automatically.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── FOOTER ── -->
+  <footer>
+    <span>QA Automation Portfolio · Playwright + Selenium · 2024</span>
+    <div class="footer-links">
+      <a href="https://github.com">GitHub</a>
+      <a href="https://linkedin.com">LinkedIn</a>
+      <a href="mailto:qa@example.com">Contact</a>
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,32 @@
+<testsuites id="" name="" tests="14" failures="0" skipped="0" errors="0" time="26.210451">
+<testsuite name="auth.spec.js" timestamp="2026-05-03T11:47:55.135Z" hostname="chromium" tests="14" failures="0" skipped="0" time="115.644" errors="0">
+<testcase name="Authentication › ✅ Valid credentials redirect to dashboard" classname="auth.spec.js" time="9.014">
+</testcase>
+<testcase name="Authentication › ✅ Remember me keeps session across reload" classname="auth.spec.js" time="9.461">
+</testcase>
+<testcase name="Authentication › ❌ Wrong password shows error message" classname="auth.spec.js" time="9.347">
+</testcase>
+<testcase name="Authentication › ❌ Empty fields show validation errors" classname="auth.spec.js" time="8.816">
+</testcase>
+<testcase name="Authentication › ❌ Non-existent user shows generic error (no user enumeration)" classname="auth.spec.js" time="8.572">
+</testcase>
+<testcase name="Authentication › 🔒 SQL injection attempt is safely handled" classname="auth.spec.js" time="8.944">
+</testcase>
+<testcase name="Authentication › 🔒 XSS payload in username field is escaped" classname="auth.spec.js" time="8.375">
+</testcase>
+<testcase name="Authentication › 🔒 Invalid credentials show error message" classname="auth.spec.js" time="7.742">
+</testcase>
+<testcase name="Authentication › ❌ Invalid username rejected: &quot;notauser&quot;" classname="auth.spec.js" time="8.131">
+</testcase>
+<testcase name="Authentication › ❌ Invalid username rejected: &quot;wrong@email.com&quot;" classname="auth.spec.js" time="8.307">
+</testcase>
+<testcase name="Authentication › ❌ Invalid username rejected: &quot;admin&quot;" classname="auth.spec.js" time="7.584">
+</testcase>
+<testcase name="Authentication › ❌ Invalid username rejected: &quot;root&quot;" classname="auth.spec.js" time="8.16">
+</testcase>
+<testcase name="Authentication › ❌ Invalid username rejected: &quot;(empty)&quot;" classname="auth.spec.js" time="6.669">
+</testcase>
+<testcase name="Authentication › ♿ Login form is keyboard navigable" classname="auth.spec.js" time="6.522">
+</testcase>
+</testsuite>
+</testsuites>
