@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 # 🎯 QA Automation Portfolio
 ### Playwright · Selenium · CI/CD · Page Object Model · API Testing
 
